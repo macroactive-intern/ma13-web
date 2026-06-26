@@ -14,28 +14,32 @@ export default function ChangePasswordForm() {
     setSuccess(false)
     setPending(true)
 
-    const form = new FormData(e.currentTarget)
+    try {
+      const form = new FormData(e.currentTarget)
 
-    const res = await fetch('/api/me/password', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        current_password: form.get('current_password'),
-        new_password: form.get('new_password'),
-        new_password_confirmation: form.get('new_password_confirmation'),
-      }),
-    })
+      const res = await fetch('/api/me/password', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          current_password: form.get('current_password'),
+          new_password: form.get('new_password'),
+          new_password_confirmation: form.get('new_password_confirmation'),
+        }),
+      })
 
-    setPending(false)
+      if (res.ok) {
+        setSuccess(true)
+        formRef.current?.reset()
+        return
+      }
 
-    if (res.ok) {
-      setSuccess(true)
-      formRef.current?.reset()
-      return
+      const data = await res.json()
+      setError(data.message ?? 'Failed to update password.')
+    } catch {
+      setError('Network error. Please try again.')
+    } finally {
+      setPending(false)
     }
-
-    const data = await res.json()
-    setError(data.message ?? 'Failed to update password.')
   }
 
   return (

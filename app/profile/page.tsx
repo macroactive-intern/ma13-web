@@ -2,7 +2,7 @@ import { apiFetch } from '@/lib/api-client'
 import ChangePasswordForm from '@/components/ChangePasswordForm'
 import LogoutButton from '@/components/LogoutButton'
 
-type User = { id: number; name: string; email: string }
+type User = { id?: number; name?: string; email?: string }
 
 export default async function ProfilePage() {
   const res = await apiFetch('/api/me')
@@ -16,8 +16,8 @@ export default async function ProfilePage() {
       </div>
 
       <section className="flex flex-col gap-2">
-        <p><span className="font-medium">Name:</span> {user.name}</p>
-        <p><span className="font-medium">Email:</span> {user.email}</p>
+        <p><span className="font-medium">Name:</span> {user.name ?? '—'}</p>
+        <p><span className="font-medium">Email:</span> {user.email ?? '—'}</p>
       </section>
 
       <section className="flex flex-col gap-4">

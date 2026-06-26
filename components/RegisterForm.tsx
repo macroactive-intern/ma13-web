@@ -17,31 +17,35 @@ export default function RegisterForm() {
     setFieldErrors({})
     setPending(true)
 
-    const form = new FormData(e.currentTarget)
+    try {
+      const form = new FormData(e.currentTarget)
 
-    const res = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: form.get('name'),
-        email: form.get('email'),
-        password: form.get('password'),
-        password_confirmation: form.get('password_confirmation'),
-      }),
-    })
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.get('name'),
+          email: form.get('email'),
+          password: form.get('password'),
+          password_confirmation: form.get('password_confirmation'),
+        }),
+      })
 
-    setPending(false)
+      if (res.ok) {
+        router.push('/profile')
+        return
+      }
 
-    if (res.ok) {
-      router.push('/profile')
-      return
-    }
-
-    const data = await res.json()
-    if (data.errors) {
-      setFieldErrors(data.errors)
-    } else {
-      setError(data.message ?? 'Registration failed.')
+      const data = await res.json()
+      if (data.errors) {
+        setFieldErrors(data.errors)
+      } else {
+        setError(data.message ?? 'Registration failed.')
+      }
+    } catch {
+      setError('Network error. Please try again.')
+    } finally {
+      setPending(false)
     }
   }
 

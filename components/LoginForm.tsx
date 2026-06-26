@@ -13,26 +13,30 @@ export default function LoginForm() {
     setError(null)
     setPending(true)
 
-    const form = new FormData(e.currentTarget)
+    try {
+      const form = new FormData(e.currentTarget)
 
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: form.get('email'),
-        password: form.get('password'),
-      }),
-    })
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: form.get('email'),
+          password: form.get('password'),
+        }),
+      })
 
-    setPending(false)
+      if (res.ok) {
+        router.push('/profile')
+        return
+      }
 
-    if (res.ok) {
-      router.push('/profile')
-      return
+      const data = await res.json()
+      setError(data.message ?? 'Login failed.')
+    } catch {
+      setError('Network error. Please try again.')
+    } finally {
+      setPending(false)
     }
-
-    const data = await res.json()
-    setError(data.message ?? 'Login failed.')
   }
 
   return (

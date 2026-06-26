@@ -1,21 +1,13 @@
 import { NextRequest } from 'next/server'
-import { setAuthCookie } from '@/lib/auth-cookie'
+import { proxyAuthRequest } from '@/lib/proxy-request'
 
 export async function POST(request: NextRequest) {
-  const body = await request.json()
-
-  const res = await fetch(`${process.env.LARAVEL_API_URL}/api/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: JSON.stringify(body),
-  })
-
-  const data = await res.json()
-
-  if (res.ok) {
-    await setAuthCookie(data.token)
-    return Response.json({ ok: true })
+  let body: unknown
+  try {
+    body = await request.json()
+  } catch {
+    return Response.json({ message: 'Invalid request body.' }, { status: 400 })
   }
 
-  return Response.json(data, { status: res.status })
+  return proxyAuthRequest('/api/auth/login', body)
 }

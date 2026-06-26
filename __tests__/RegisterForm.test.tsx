@@ -36,6 +36,17 @@ describe('RegisterForm', () => {
     await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/profile'))
   })
 
+  it('shows a network error when fetch throws', async () => {
+    global.fetch = vi.fn().mockRejectedValue(new Error('Network Error'))
+
+    render(<RegisterForm />)
+    await fillAndSubmit()
+
+    await waitFor(() =>
+      expect(screen.getByText('Network error. Please try again.')).toBeInTheDocument()
+    )
+  })
+
   it('shows a field error when email is already taken', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: false,

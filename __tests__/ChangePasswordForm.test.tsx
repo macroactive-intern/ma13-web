@@ -26,6 +26,17 @@ describe('ChangePasswordForm', () => {
     )
   })
 
+  it('shows a network error when fetch throws', async () => {
+    global.fetch = vi.fn().mockRejectedValue(new Error('Network Error'))
+
+    render(<ChangePasswordForm />)
+    await fillAndSubmit()
+
+    await waitFor(() =>
+      expect(screen.getByText('Network error. Please try again.')).toBeInTheDocument()
+    )
+  })
+
   it('shows success message and clears the form on success', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
