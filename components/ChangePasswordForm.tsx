@@ -2,8 +2,11 @@
 
 import { useState, FormEvent, useRef } from 'react'
 
+type FieldErrors = Record<string, string[]>
+
 export default function ChangePasswordForm() {
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [success, setSuccess] = useState(false)
   const [pending, setPending] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
@@ -11,6 +14,7 @@ export default function ChangePasswordForm() {
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setError(null)
+    setFieldErrors({})
     setSuccess(false)
     setPending(true)
 
@@ -34,7 +38,11 @@ export default function ChangePasswordForm() {
       }
 
       const data = await res.json()
-      setError(data.message ?? 'Failed to update password.')
+      if (data.errors) {
+        setFieldErrors(data.errors)
+      } else {
+        setError(data.message ?? 'Failed to update password.')
+      }
     } catch {
       setError('Network error. Please try again.')
     } finally {
@@ -50,16 +58,21 @@ export default function ChangePasswordForm() {
       <div className="flex flex-col gap-1">
         <label htmlFor="current_password" className="text-sm font-medium">Current password</label>
         <input id="current_password" name="current_password" type="password" required className="border rounded px-3 py-2" />
+        {fieldErrors.current_password && <p className="text-red-600 text-sm">{fieldErrors.current_password[0]}</p>}
       </div>
 
       <div className="flex flex-col gap-1">
         <label htmlFor="new_password" className="text-sm font-medium">New password</label>
         <input id="new_password" name="new_password" type="password" required className="border rounded px-3 py-2" />
+        {fieldErrors.new_password && <p className="text-red-600 text-sm">{fieldErrors.new_password[0]}</p>}
       </div>
 
       <div className="flex flex-col gap-1">
         <label htmlFor="new_password_confirmation" className="text-sm font-medium">Confirm new password</label>
         <input id="new_password_confirmation" name="new_password_confirmation" type="password" required className="border rounded px-3 py-2" />
+        {fieldErrors.new_password_confirmation && (
+          <p className="text-red-600 text-sm">{fieldErrors.new_password_confirmation[0]}</p>
+        )}
       </div>
 
       <button type="submit" disabled={pending} className="bg-blue-600 text-white rounded px-4 py-2 disabled:opacity-50">

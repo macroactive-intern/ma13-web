@@ -37,6 +37,27 @@ describe('ChangePasswordForm', () => {
     )
   })
 
+  it('shows a field error when the new password is too short', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 422,
+      json: () =>
+        Promise.resolve({
+          message: 'The new password field must be at least 8 characters.',
+          errors: { new_password: ['The new password field must be at least 8 characters.'] },
+        }),
+    })
+
+    render(<ChangePasswordForm />)
+    await fillAndSubmit('currentpass', 'short')
+
+    await waitFor(() =>
+      expect(
+        screen.getByText('The new password field must be at least 8 characters.'),
+      ).toBeInTheDocument(),
+    )
+  })
+
   it('shows success message and clears the form on success', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,

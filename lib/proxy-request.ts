@@ -1,4 +1,4 @@
-import { setAuthCookie } from '@/lib/auth-cookie'
+import { getAuthToken, setAuthCookie } from '@/lib/auth-cookie'
 
 export async function proxyAuthRequest(apiPath: string, body: unknown): Promise<Response> {
   const apiUrl = process.env.LARAVEL_API_URL
@@ -30,6 +30,45 @@ export async function proxyAuthRequest(apiPath: string, body: unknown): Promise<
     }
     await setAuthCookie(data.token)
     return Response.json({ ok: true })
+  }
+
+  return Response.json(data, { status: res.status })
+}
+
+export async function proxyAuthenticatedRequest(
+  apiPath: string,
+  options?: RequestInit,
+): Promise<Response> {
+  const apiUrl = process.env.LARAVEL_API_URL
+  if (!apiUrl) {
+    return Response.json({ message: 'Server misconfiguration.' }, { status: 500 })
+  }
+
+  const token = await getAuthToken()
+  if (!token) {
+    return Response.json({ message: 'Unauthenticated.' }, { status: 401 })
+  }
+
+  let res: Response
+  try {
+    res = await fetch(`${apiUrl}${apiPath}`, {
+      ...options,
+      headers: {
+        Accept: 'application/json',
+        ...(options?.body != null ? { 'Content-Type': 'application/json' } : {}),
+        Authorization: `Bearer ${token}`,
+        ...options?.headers,
+      },
+    })
+  } catch {
+    return Response.json({ message: 'Service unavailable.' }, { status: 503 })
+  }
+
+  let data: unknown
+  try {
+    data = await res.json()
+  } catch {
+    return Response.json({ message: 'Unexpected response from server.' }, { status: 502 })
   }
 
   return Response.json(data, { status: res.status })

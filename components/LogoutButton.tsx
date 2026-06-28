@@ -9,9 +9,13 @@ export default function LogoutButton() {
 
   async function handleLogout() {
     setPending(true)
-
-    await fetch('/api/auth/logout', { method: 'POST' })
-
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+    } catch {
+      // best-effort; redirect regardless so the user is never stuck
+    } finally {
+      setPending(false)
+    }
     router.push('/login')
   }
 

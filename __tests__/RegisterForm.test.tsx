@@ -13,7 +13,7 @@ describe('RegisterForm', () => {
 
   beforeEach(() => {
     mockPush = vi.fn()
-    vi.mocked(useRouter).mockReturnValue({ push: mockPush } as ReturnType<typeof useRouter>)
+    vi.mocked(useRouter).mockReturnValue({ push: mockPush } as unknown as ReturnType<typeof useRouter>)
   })
 
   async function fillAndSubmit() {
